@@ -13,17 +13,20 @@ class Mirror():
             return
 
         while True:
-            self.frame()
+            ok = self.frame()
+            if not ok:
+                return
             key = cv2.waitKey(20)
             if key == 27: # exit on ESC
-                break
-
-    def frame(self):
-        rval, frame = self.video_capture.read()  # frame is 720x1280x3
-        cv2.imshow(self.window_name, frame)
+                return
 
     def shutdown(self):
         cv2.destroyWindow(self.window_name)
+
+    def frame(self):
+        ok, frame = self.video_capture.read()  # frame is 720x1280x3
+        cv2.imshow(self.window_name, frame)
+        return ok
 
 
 def main():
