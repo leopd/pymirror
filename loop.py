@@ -11,6 +11,9 @@ class Library():
 
     def add(self, frame):
         pass
+
+    def find_nearest(self, frame):
+        return frame
         
 
 class Mirror():
@@ -20,8 +23,8 @@ class Mirror():
         cv2.namedWindow(self.window_name)
         self.video_capture = cv2.VideoCapture(camera_number)
         self.library = Library()
-        self.XX = 1280
-        self.YY = 720
+        self.XX = 729
+        self.YY = 729
 
     def display(self):
         if not self.video_capture.isOpened(): # try to get the first frame
@@ -38,8 +41,15 @@ class Mirror():
     def shutdown(self):
         cv2.destroyWindow(self.window_name)
 
+
+    def normalize(self, frame):
+        """Convert it to the expected size"""
+        return cv2.resize(frame, (self.XX,self.YY))
+
+
     def frame(self):
         ok, frame = self.video_capture.read()  # frame is 720x1280x3
+        frame = self.normalize(frame)
         self.store_frame(frame)
         processed = self.process_frame(frame)
         cv2.imshow(self.window_name, processed)
@@ -51,8 +61,8 @@ class Mirror():
     def process_chunk(self, chunk):
         average_color = chunk.mean(axis=0).mean(axis=0)  # 3x1 vector
         output = np.zeros(chunk.shape) + average_color
-        print "input: %s" % str(chunk.shape)
-        print "output: %s" % str(output.shape)
+        #print "input: %s" % str(chunk.shape)
+        #print "output: %s" % str(output.shape)
         return output
 
     def process_frame(self,frame):
@@ -60,7 +70,7 @@ class Mirror():
             for y in range(0, self.YY, 81):
                 chunk = frame[x:x+81,y:y+81]
                 frame[x:x+81,y:y+81] = self.process_chunk(chunk)
-        print "frame is %s" % str(frame.shape)
+        #print "frame is %s" % str(frame.shape)
         return frame
 
 
