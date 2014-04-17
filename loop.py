@@ -55,6 +55,7 @@ class Mirror():
 
     def display(self):
         if not self.video_capture.isOpened(): # try to get the first frame
+            print "Failed to open camera."
             return
 
         start = time.time()
@@ -62,11 +63,12 @@ class Mirror():
 
         while True:
             ok = self.frame()
-            frame_cnt += 1
             if not ok:
                 return
-            key = cv2.waitKey(10)
+            frame_cnt += 1
+            key = cv2.waitKey(10)  # Needed for some reason.
             if( time.time() - start > 5 ):
+                # Every 5 seconds, print fps.
                 fps = frame_cnt / (time.time() - start)
                 print "%.1f fps" % fps
                 frame_cnt = 0
