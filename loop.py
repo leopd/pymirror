@@ -16,7 +16,8 @@ class Library():
 
 
     def index(self, img):
-        i = int(img.mean())
+        avg_color = img.mean(axis=0).mean(axis=0)
+        i = str(list(np.around(avg_color/20)*20))
         return i
 
 
@@ -27,7 +28,8 @@ class Library():
 
 
     def missing_image(self,idx):
-        return np.zeros((self.s,self.s,3)) + idx
+        color = np.asarray(eval(idx))
+        return np.zeros((self.s,self.s,3)) + color
 
 
     def find_nearest(self, frame):
