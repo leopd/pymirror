@@ -49,9 +49,10 @@ class Mirror():
         self.window_name = window_name
         cv2.namedWindow(self.window_name)
         self.video_capture = cv2.VideoCapture(camera_number)
-        self.library = Library()
         self.XX = 729
         self.YY = 729
+        self.s = 40
+        self.library = Library(self.s)
 
     def display(self):
         if not self.video_capture.isOpened(): # try to get the first frame
@@ -103,7 +104,7 @@ class Mirror():
 
 
     def process_frame(self,frame):
-        s=81
+        s = self.s
         for x in range(0, self.XX, s):
             for y in range(0, self.YY, s):
                 chunk = frame[x:x+s,y:y+s]
