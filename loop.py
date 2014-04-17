@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import numpy as np
 import cv2
 
 
@@ -19,8 +20,10 @@ class Mirror():
         cv2.namedWindow(self.window_name)
         self.video_capture = cv2.VideoCapture(camera_number)
         self.library = Library()
+        self.XX = 1280
+        self.YY = 720
 
-    def loop(self):
+    def display(self):
         if not self.video_capture.isOpened(): # try to get the first frame
             return
 
@@ -45,13 +48,25 @@ class Mirror():
     def store_frame(self,frame):
         self.library.add(frame)
 
+    def process_chunk(self, chunk):
+        average_color = chunk.mean(axis=0).mean(axis=0)  # 3x1 vector
+        output = np.zeros(chunk.shape) + average_color
+        print "input: %s" % str(chunk.shape)
+        print "output: %s" % str(output.shape)
+        return output
+
     def process_frame(self,frame):
+        for x in range(0, self.XX, 81):
+            for y in range(0, self.YY, 81):
+                chunk = frame[x:x+81,y:y+81]
+                frame[x:x+81,y:y+81] = self.process_chunk(chunk)
+        print "frame is %s" % str(frame.shape)
         return frame
 
 
 def main():
     mirror = Mirror()
-    mirror.loop()
+    mirror.display()
     mirror.shutdown()
 
 if __name__ == "__main__":
