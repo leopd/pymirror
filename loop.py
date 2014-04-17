@@ -7,9 +7,10 @@ import time
 class Library():
     """A class for storing all the images to be used
     """
-    def __init__(self, size=81):
+    def __init__(self, size=81, coarseness=5):
         self.s = size
         self.lib = {}
+        self.coarseness = coarseness
 
 
     def shrink(self, frame):
@@ -17,8 +18,7 @@ class Library():
 
 
     def index(self, img):
-        avg_color = img.mean(axis=0).mean(axis=0)
-        i = str(list(np.around(avg_color/20)*20))
+        i = int( img.mean() / self.coarseness ) * self.coarseness
         return i
 
 
@@ -29,8 +29,7 @@ class Library():
 
 
     def missing_image(self,idx):
-        color = np.asarray(eval(idx))
-        return np.zeros((self.s,self.s,3)) + color
+        return np.zeros((self.s,self.s,3)) + idx
 
 
     def find_nearest(self, frame):
@@ -40,6 +39,18 @@ class Library():
             return self.lib[i]
         except KeyError:
             return self.missing_image(i)
+
+
+class ColorLibrary(Library):
+
+    def index(self, img):
+        avg_color = img.mean(axis=0).mean(axis=0)
+        i = str(list(np.around(avg_color/self.coarseness)*self.coarseness))
+        return i
+
+    def missing_image(self,idx):
+        color = np.asarray(eval(idx))
+        return np.zeros((self.s,self.s,3)) + color
 
 
 
