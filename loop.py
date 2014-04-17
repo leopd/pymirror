@@ -115,7 +115,9 @@ class Mirror():
 
     def normalize(self, frame):
         """Convert it to the expected size"""
-        return cv2.resize(frame, (self.XX,self.YY))
+        f = cv2.resize(frame, (self.XX,self.YY))
+        f = cv2.flip(f,1)
+        return f
 
 
     def tick(self):
