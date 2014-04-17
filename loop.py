@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import numpy as np
 import cv2
+import time
 
 
 class Library():
@@ -56,13 +57,21 @@ class Mirror():
         if not self.video_capture.isOpened(): # try to get the first frame
             return
 
+        start = time.time()
+        frame_cnt = 0
+
         while True:
             ok = self.frame()
+            frame_cnt += 1
             if not ok:
                 return
-            key = cv2.waitKey(20)
-            if key == 27: # exit on ESC
-                return
+            key = cv2.waitKey(10)
+            if( time.time() - start > 5 ):
+                fps = frame_cnt / (time.time() - start)
+                print "%.1f fps" % fps
+                frame_cnt = 0
+                start = time.time()
+                
 
     def shutdown(self):
         cv2.destroyWindow(self.window_name)
@@ -87,7 +96,8 @@ class Mirror():
 
 
     def process_chunk(self, chunk):
-        return self.library.find_nearest(chunk)
+        nearest = self.library.find_nearest(chunk)
+        return np.resize(nearest, chunk.shape)
 
 
     def process_frame(self,frame):
