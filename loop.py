@@ -89,10 +89,11 @@ class Mirror():
 
 
     def process_frame(self,frame):
-        for x in range(0, self.XX, 81):
-            for y in range(0, self.YY, 81):
-                chunk = frame[x:x+81,y:y+81]
-                frame[x:x+81,y:y+81] = self.process_chunk(chunk)
+        s=81
+        for x in range(0, self.XX, s):
+            for y in range(0, self.YY, s):
+                chunk = frame[x:x+s,y:y+s]
+                frame[x:x+s,y:y+s] = self.process_chunk(chunk)
         #print "frame is %s" % str(frame.shape)
         return frame
 
