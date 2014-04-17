@@ -26,13 +26,17 @@ class Library():
         self.lib[i] = mini
 
 
+    def missing_image(self,idx):
+        return np.zeros((self.s,self.s,3)) + idx
+
+
     def find_nearest(self, frame):
         mini = self.shrink(frame)
         i = self.index(mini)
         try:
             return self.lib[i]
         except KeyError:
-            return np.zeros(frame.shape) + i
+            return self.missing_image(i)
 
 
 
@@ -93,6 +97,7 @@ class Mirror():
         return frame
 
 
+
 def main():
     mirror = Mirror()
     mirror.display()
@@ -100,3 +105,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
