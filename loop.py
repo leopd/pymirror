@@ -43,6 +43,25 @@ class Library():
 
 
 
+class Tile():
+    def __init__(self, y1, y2, x1, x2):
+        self.y1 = y1
+        self.y2 = y2
+        self.x1 = x1
+        self.x2 = x2
+
+
+    def extract(self, img):
+        """Extracts the tile"""
+        return img[self.y1:self.y2, self.x1:self.x2]
+
+
+    def replace(self, base, newtile):
+        """Places newtile into base"""
+        base[self.y1:self.y2, self.x1:self.x2] = newtile
+
+
+
 class Mirror():
 
     def __init__(self, window_name="mirror", camera_number=0):
@@ -54,6 +73,9 @@ class Mirror():
         self.s = 40
         self.library = Library(self.s)
 
+        self.output = np.zeros((self.XX,self.YY,3))
+
+
     def display(self):
         if not self.video_capture.isOpened(): # try to get the first frame
             print "Failed to open camera."
@@ -63,7 +85,7 @@ class Mirror():
         frame_cnt = 0
 
         while True:
-            ok = self.frame()
+            ok = self.tick()
             if not ok:
                 return
             frame_cnt += 1
@@ -85,7 +107,8 @@ class Mirror():
         return cv2.resize(frame, (self.XX,self.YY))
 
 
-    def frame(self):
+    def tick(self):
+        """Called once per frame.  Main logic here."""
         ok, frame = self.video_capture.read()  # frame is 720x1280x3
         frame = self.normalize(frame)
         self.store_frame(frame)
@@ -103,12 +126,17 @@ class Mirror():
         return np.resize(nearest, chunk.shape)
 
 
-    def process_frame(self,frame):
+    def tiles(self):
         s = self.s
         for x in range(0, self.XX, s):
             for y in range(0, self.YY, s):
-                chunk = frame[x:x+s,y:y+s]
-                frame[x:x+s,y:y+s] = self.process_chunk(chunk)
+                yield Tile(y,y+s,x,x+s)
+
+
+    def process_frame(self,frame):
+        for t in self.tiles():
+            chunk = t.extract(frame)
+            t.replace(frame, self.process_chunk(chunk))
         #print "frame is %s" % str(frame.shape)
         return frame
 
