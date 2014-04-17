@@ -6,15 +6,35 @@ import cv2
 class Library():
     """A class for storing all the images to be used
     """
-    def __init__(self):
-        pass
+    def __init__(self, size=81):
+        self.s = size
+        self.lib = {}
+
+
+    def shrink(self, frame):
+        return cv2.resize(frame, (self.s,self.s))
+
+
+    def index(self, img):
+        i = int(img.mean())
+        return i
+
 
     def add(self, frame):
-        pass
+        mini = self.shrink(frame)
+        i = self.index(mini)
+        self.lib[i] = mini
+
 
     def find_nearest(self, frame):
-        return frame
-        
+        mini = self.shrink(frame)
+        i = self.index(mini)
+        try:
+            return self.lib[i]
+        except KeyError:
+            return np.zeros(frame.shape) + i
+
+
 
 class Mirror():
 
@@ -55,15 +75,14 @@ class Mirror():
         cv2.imshow(self.window_name, processed)
         return ok
 
+
     def store_frame(self,frame):
         self.library.add(frame)
 
+
     def process_chunk(self, chunk):
-        average_color = chunk.mean(axis=0).mean(axis=0)  # 3x1 vector
-        output = np.zeros(chunk.shape) + average_color
-        #print "input: %s" % str(chunk.shape)
-        #print "output: %s" % str(output.shape)
-        return output
+        return self.library.find_nearest(chunk)
+
 
     def process_frame(self,frame):
         for x in range(0, self.XX, 81):
