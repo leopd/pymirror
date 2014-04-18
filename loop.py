@@ -85,7 +85,7 @@ class Tile():
 
 
     def should_update(self):
-        tau = 10.
+        tau = 10.  # Time constant for updates
         ratio = math.exp( - self.age() / tau )
         return random.random() > ratio
 
@@ -171,10 +171,11 @@ class Mirror():
         for t in self.tiles:
             if t.should_update():
                 chunk = t.extract(frame)
+                chunk = self.process_chunk(chunk)
                 t.reset_age()
             else:
                 chunk = t.extract(self.last_frame)
-            t.replace(frame, self.process_chunk(chunk))
+            t.replace(frame, chunk)
         #print "frame is %s" % str(frame.shape)
         self.last_frame = frame
         return frame
