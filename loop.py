@@ -1,7 +1,10 @@
 #!/usr/bin/python
-import numpy as np
-import cv2
+import math
 import time
+import random
+
+import cv2
+import numpy as np
 
 
 class Library():
@@ -60,6 +63,7 @@ class Tile():
         self.y2 = y2
         self.x1 = x1
         self.x2 = x2
+        self.reset_age()
 
 
     def extract(self, img):
@@ -70,6 +74,20 @@ class Tile():
     def replace(self, base, newtile):
         """Places newtile into base"""
         base[self.y1:self.y2, self.x1:self.x2] = newtile
+
+
+    def age(self):
+        return time.time() - self._time
+
+
+    def reset_age(self):
+        self._time = time.time()
+
+
+    def should_update(self):
+        tau = 10.
+        ratio = math.exp( - self.age() / tau )
+        return random.random() > ratio
 
 
 
@@ -84,7 +102,9 @@ class Mirror():
         self.s = 40
         self.library = Library(self.s)
 
-        self.output = np.zeros((self.XX,self.YY,3))
+        self.last_frame = np.zeros((self.XX,self.YY,3))
+
+        self.tiles = list(self.base_tiles())
 
 
     def display(self):
@@ -126,6 +146,7 @@ class Mirror():
         frame = self.normalize(frame)
         self.store_frame(frame)
         processed = self.process_frame(frame)
+        self.last_frame = processed
         cv2.imshow(self.window_name, processed)
         return ok
 
@@ -139,7 +160,7 @@ class Mirror():
         return np.resize(nearest, chunk.shape)
 
 
-    def tiles(self):
+    def base_tiles(self):
         s = self.s
         for x in range(0, self.XX, s):
             for y in range(0, self.YY, s):
@@ -147,10 +168,15 @@ class Mirror():
 
 
     def process_frame(self,frame):
-        for t in self.tiles():
-            chunk = t.extract(frame)
+        for t in self.tiles:
+            if t.should_update():
+                chunk = t.extract(frame)
+                t.reset_age()
+            else:
+                chunk = t.extract(self.last_frame)
             t.replace(frame, self.process_chunk(chunk))
         #print "frame is %s" % str(frame.shape)
+        self.last_frame = frame
         return frame
 
 
