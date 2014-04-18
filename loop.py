@@ -57,6 +57,13 @@ class ColorLibrary(Library):
 
 
 
+def chunk_difference(a,b):
+    """Returns a measure of how far off the two chunks are.
+    """
+    return np.absolute(a-b).mean() / 255.
+
+
+
 class Tile():
     def __init__(self, y1, y2, x1, x2):
         self.y1 = y1
@@ -84,10 +91,14 @@ class Tile():
         self._time = time.time()
 
 
-    def should_update(self):
-        tau = 10.  # Time constant for updates
-        ratio = math.exp( - self.age() / tau )
-        return random.random() > ratio
+    def should_update(self, score):
+        """For high scores, it will update quickly.
+        For low scores, it will update slowly.
+        Score expected to be normalized
+        """
+        tau = 2.  # Time constant for updates
+        decay = math.exp( - self.age() / tau )
+        return random.random() + score * 1.5 > decay
 
 
 
@@ -169,9 +180,10 @@ class Mirror():
 
     def process_frame(self,frame):
         for t in self.tiles:
-            if t.should_update():
-                chunk = t.extract(frame)
-                chunk = self.process_chunk(chunk)
+            input_chunk = t.extract(frame)
+            chunk = self.process_chunk(input_chunk)
+            delta = chunk_difference(input_chunk,chunk)
+            if t.should_update(delta):
                 t.reset_age()
             else:
                 chunk = t.extract(self.last_frame)
